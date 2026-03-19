@@ -133,7 +133,14 @@ export async function getUserData(uid) {
 export async function updateUserProfile(data) {
   const user = auth.currentUser;
   if (!user) throw new Error("Not authenticated");
-  await updateDoc(doc(db, "users", user.uid), { ...data, updatedAt: serverTimestamp() });
+  await setDoc(doc(db, "users", user.uid), {
+    uid: user.uid,
+    email: user.email,
+    role: "customer",
+    createdAt: serverTimestamp(),
+    ...data,
+    updatedAt: serverTimestamp()
+  }, { merge: true });
 }
 
 // Check if admin
