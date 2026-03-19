@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin — ZEE CLOTHING</title>
+  <link rel="stylesheet" href="/zee-clothing/css/main.css">
+  <style>
+    body { display: block; }
+    .img-preview { width: 100%; height: 180px; background: var(--black); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; margin-bottom: 12px; overflow: hidden; }
+    .img-preview img { width: 100%; height: 100%; object-fit: cover; }
+    .img-preview-placeholder { font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; }
+    .product-thumb { width: 48px; height: 60px; background: var(--mid); display: flex; align-items: center; justify-content: center; font-family: 'Bebas Neue', sans-serif; font-size: 14px; color: var(--border); overflow: hidden; }
+    .product-thumb img { width: 100%; height: 100%; object-fit: cover; }
+    .action-btns { display: flex; gap: 8px; }
+    .action-btn { font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 1px; text-transform: uppercase; padding: 5px 12px; border: 1px solid var(--border); background: transparent; color: var(--muted); cursor: pointer; transition: all 0.2s; }
+    .action-btn.edit:hover { border-color: var(--accent); color: var(--accent); }
+    .action-btn.del:hover  { border-color: var(--error); color: var(--error); }
+    .tab-bar { display: flex; gap: 0; border-bottom: 1px solid var(--border); margin-bottom: 28px; }
+    .tab-btn { font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; padding: 12px 24px; background: transparent; border: none; color: var(--muted); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; }
+    .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .search-bar { display: flex; gap: 12px; margin-bottom: 20px; }
+    .search-input { flex: 1; background: var(--mid); border: 1px solid var(--border); color: var(--white); font-family: 'Syne', sans-serif; font-size: 13px; padding: 10px 14px; outline: none; }
+    .search-input:focus { border-color: var(--accent); }
+    .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+    .sizes-grid { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+    .size-check { display: flex; align-items: center; gap: 6px; }
+    .size-check input { accent-color: var(--accent); }
+    .size-check label { font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 1px; color: var(--muted); cursor: pointer; text-transform: uppercase; }
+  </style>
+</head>
+<body>
+<div class="toast-wrap" id="toastWrap"></div>
+
+<!-- Add/Edit Product Modal -->
+<div class="modal-overlay" id="productModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="modalTitle">Add Product</span>
+      <button class="modal-close" id="closeModal">✕</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="editProductId">
+      <div class="img-preview" id="imgPreview"><span class="img-preview-placeholder">No image yet</span></div>
+      <div class="field"><label>Image URL</label><input type="url" id="pImageUrl" placeholder="https://...image.jpg"><p style="font-family:'Space Mono',monospace;font-size:9px;color:var(--muted);margin-top:4px;">Paste a direct image URL (e.g. from Google Drive, Cloudinary, etc.)</p></div>
+      <div class="field"><label>Product Name</label><input type="text" id="pName" placeholder="Core Oversized Tee"></div>
+      <div class="form-row-3">
+        <div class="field"><label>Price (₦)</label><input type="number" id="pPrice" placeholder="15000"></div>
+        <div class="field"><label>Old Price (₦)</label><input type="number" id="pOldPrice" placeholder="Optional"></div>
+        <div class="field"><label>Stock Qty</label><input type="number" id="pStock" placeholder="20"></div>
+      </div>
+      <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+        <div class="field"><label>Category</label>
+          <select id="pCategory">
+            <option>Essentials</option><option>Heavyweights</option><option>Accessories</option>
+            <option>Outerwear</option><option>Bottoms</option><option>Sets</option>
+          </select>
+        </div>
+        <div class="field"><label>Badge</label>
+          <select id="pBadge">
+            <option value="">None</option><option>New</option><option>Sale</option>
+            <option>Hot</option><option>Limited</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label>Available Sizes</label>
+        <div class="sizes-grid">
+          <div class="size-check"><input type="checkbox" id="sXS" value="XS"><label for="sXS">XS</label></div>
+          <div class="size-check"><input type="checkbox" id="sS" value="S"><label for="sS">S</label></div>
+          <div class="size-check"><input type="checkbox" id="sM" value="M" checked><label for="sM">M</label></div>
+          <div class="size-check"><input type="checkbox" id="sL" value="L" checked><label for="sL">L</label></div>
+          <div class="size-check"><input type="checkbox" id="sXL" value="XL" checked><label for="sXL">XL</label></div>
+          <div class="size-check"><input type="checkbox" id="sXXL" value="XXL"><label for="sXXL">XXL</label></div>
+          <div class="size-check"><input type="checkbox" id="sOS" value="One Size"><label for="sOS">One Size</label></div>
+        </div>
+      </div>
+      <div class="field"><label>Description</label><textarea id="pDesc" placeholder="Product description..."></textarea></div>
+      <div class="field">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <input type="checkbox" id="pFeatured" style="width:16px;height:16px;accent-color:var(--accent);">
+          <label for="pFeatured" style="font-family:'Syne',sans-serif;font-size:13px;letter-spacing:0;text-transform:none;color:var(--white);">Show on homepage</label>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-outline-w" id="cancelModal">Cancel</button>
+      <button class="btn btn-accent" id="saveProductBtn"><span class="btn-text">Save Product</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- Main Layout -->
+<div class="admin-layout">
+  <!-- Sidebar -->
+  <div class="admin-sidebar">
+    <div class="admin-logo">ZEE <span>// Admin Panel</span></div>
+    <nav class="admin-nav">
+      <button class="admin-nav-item active" data-tab="dashboard">📊 Dashboard</button>
+      <button class="admin-nav-item" data-tab="products">👕 Products</button>
+      <button class="admin-nav-item" data-tab="orders">📦 Orders</button>
+      <button class="admin-nav-item" data-tab="customers">👥 Customers</button>
+      <button class="admin-nav-item" data-tab="chats">💬 Support Chats</button>
+    </nav>
+    <div style="padding:20px 24px; border-top:1px solid var(--border);">
+      <a href="/zee-clothing/index.html" class="admin-nav-item" style="padding-left:0;">🌐 View Store</a>
+      <button class="admin-nav-item" id="adminLogout" style="padding-left:0;">→ Log Out</button>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <main class="admin-main">
+
+    <!-- DASHBOARD -->
+    <div id="tab-dashboard" class="tab-content">
+      <div class="admin-page-title">Dashboard</div>
+      <div class="admin-page-sub">Welcome back, Admin. Here's your store overview.</div>
+      <div class="stat-grid">
+        <div class="stat-card"><div class="stat-card-label">Total Orders</div><div class="stat-card-value" id="statOrders">—</div><div class="stat-card-sub">All time</div></div>
+        <div class="stat-card"><div class="stat-card-label">Revenue</div><div class="stat-card-value" id="statRevenue">—</div><div class="stat-card-sub">Confirmed orders</div></div>
+        <div class="stat-card"><div class="stat-card-label">Products</div><div class="stat-card-value" id="statProducts">—</div><div class="stat-card-sub">In catalog</div></div>
+        <div class="stat-card"><div class="stat-card-label">Customers</div><div class="stat-card-value" id="statCustomers">—</div><div class="stat-card-sub">Registered users</div></div>
+      </div>
+      <div style="background:var(--mid);border:1px solid var(--border);padding:24px;">
+        <div style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--muted);margin-bottom:16px;">Recent Orders</div>
+        <table class="data-table" id="recentOrdersTable">
+          <thead><tr><th>Ref</th><th>Customer</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead>
+          <tbody id="recentOrdersBody"><tr><td colspan="5" style="color:var(--muted);text-align:center;padding:24px;">Loading...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- PRODUCTS -->
+    <div id="tab-products" class="tab-content" style="display:none;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <div><div class="admin-page-title">Products</div><div class="admin-page-sub">Manage your catalog.</div></div>
+        <button class="btn btn-accent" id="addProductBtn">+ Add Product</button>
+      </div>
+      <div class="search-bar">
+        <input type="text" class="search-input" id="productSearch" placeholder="Search products...">
+      </div>
+      <table class="data-table" id="productsTable">
+        <thead><tr><th></th><th>Name</th><th>Category</th><th>Price</th><th>Stock</th><th>Badge</th><th>Actions</th></tr></thead>
+        <tbody id="productsBody"><tr><td colspan="7" style="color:var(--muted);text-align:center;padding:24px;">Loading...</td></tr></tbody>
+      </table>
+    </div>
+
+    <!-- ORDERS -->
+    <div id="tab-orders" class="tab-content" style="display:none;">
+      <div class="admin-page-title">Orders</div>
+      <div class="admin-page-sub">Manage and update customer orders.</div>
+      <div class="tab-bar">
+        <button class="tab-btn active" data-filter="all">All</button>
+        <button class="tab-btn" data-filter="pending">Pending</button>
+        <button class="tab-btn" data-filter="paid">Paid</button>
+        <button class="tab-btn" data-filter="shipped">Shipped</button>
+        <button class="tab-btn" data-filter="delivered">Delivered</button>
+      </div>
+      <table class="data-table">
+        <thead><tr><th>Ref</th><th>Customer</th><th>Items</th><th>Total</th><th>Status</th><th>Date</th><th>Update</th></tr></thead>
+        <tbody id="ordersBody"><tr><td colspan="7" style="color:var(--muted);text-align:center;padding:24px;">Loading...</td></tr></tbody>
+      </table>
+    </div>
+
+    <!-- CUSTOMERS -->
+    <div id="tab-customers" class="tab-content" style="display:none;">
+      <div class="admin-page-title">Customers</div>
+      <div class="admin-page-sub">All registered users.</div>
+      <div class="search-bar">
+        <input type="text" class="search-input" id="customerSearch" placeholder="Search customers...">
+      </div>
+      <table class="data-table">
+        <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Joined</th><th>Actions</th></tr></thead>
+        <tbody id="customersBody"><tr><td colspan="5" style="color:var(--muted);text-align:center;padding:24px;">Loading...</td></tr></tbody>
+      </table>
+    </div>
+
+    <!-- CHATS -->
+    <div id="tab-chats" class="tab-content" style="display:none;">
+      <div class="admin-page-title">Support Chats</div>
+      <div class="admin-page-sub">Customer messages from the live chat widget.</div>
+      <div id="chatsContainer" style="display:flex;flex-direction:column;gap:12px;">
+        <p style="font-family:'Space Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);text-align:center;padding:40px;text-transform:uppercase;">Loading chats...</p>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script type="module">
+  import { auth, db } from "/zee-clothing/js/firebase-config.js";
+  import { logout, getUserData, isAdmin } from "/zee-clothing/js/auth.js";
+  import { getProducts, addProduct, updateProduct, deleteProduct, getOrders, updateOrderStatus, getCustomers, getAllChats } from "/zee-clothing/js/store.js";
+  import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { doc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  function toast(msg, type="s") {
+    const w = document.getElementById("toastWrap");
+    const t = document.createElement("div");
+    t.className = `toast ${type}`;
+    t.innerHTML = `<span class="toast-icon">${type==="s"?"✓":"✕"}</span><span>${msg}</span>`;
+    w.appendChild(t);
+    setTimeout(() => t.remove(), 4000);
+  }
+
+  // Auth guard — admin only
+  onAuthStateChanged(auth, async user => {
+    if (!user) { window.location.href = "/zee-clothing/pages/login.html"; return; }
+    const data = await getUserData(user.uid);
+    if (data?.role !== "admin") {
+      alert("Access denied. Admin only.");
+      window.location.href = "/zee-clothing/index.html";
+      return;
+    }
+    loadAll();
+  });
+
+  async function loadAll() {
+    loadDashboard();
+    loadProducts();
+    loadOrders();
+    loadCustomers();
+    loadChats();
+  }
+
+  // ── TABS ──
+  document.querySelectorAll(".admin-nav-item[data-tab]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".admin-nav-item").forEach(b => b.classList.remove("active"));
+      document.querySelectorAll(".tab-content").forEach(t => t.style.display = "none");
+      btn.classList.add("active");
+      document.getElementById("tab-" + btn.dataset.tab).style.display = "block";
+    });
+  });
+
+  // ── DASHBOARD ──
+  async function loadDashboard() {
+    const [products, orders, customers] = await Promise.all([getProducts(), getOrders(), getCustomers()]);
+    document.getElementById("statProducts").textContent = products.length;
+    document.getElementById("statOrders").textContent   = orders.length;
+    document.getElementById("statCustomers").textContent= customers.filter(c=>c.role==="customer").length;
+    const revenue = orders.filter(o=>o.status==="paid"||o.status==="shipped"||o.status==="delivered").reduce((s,o)=>s+Number(o.total||0),0);
+    document.getElementById("statRevenue").textContent  = "₦" + revenue.toLocaleString();
+    const tbody = document.getElementById("recentOrdersBody");
+    tbody.innerHTML = orders.slice(0,8).map(o => `
+      <tr>
+        <td style="font-family:'Space Mono',monospace;font-size:10px;color:var(--accent);">${o.orderRef||o.id.slice(0,8)}</td>
+        <td>${o.name||o.userEmail}</td>
+        <td style="font-family:'Space Mono',monospace;font-size:12px;">₦${Number(o.total||0).toLocaleString()}</td>
+        <td><span class="status-badge ${o.status}">${o.status}</span></td>
+        <td style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);">${o.createdAt?.toDate?.().toLocaleDateString()||"—"}</td>
+      </tr>
+    `).join("") || '<tr><td colspan="5" style="color:var(--muted);text-align:center;padding:20px;">No orders yet.</td></tr>';
+  }
+
+  // ── PRODUCTS ──
+  let allProducts = [];
+  async function loadProducts() {
+    allProducts = await getProducts();
+    renderProducts(allProducts);
+  }
+
+  function renderProducts(list) {
+    const tbody = document.getElementById("productsBody");
+    if (!list.length) { tbody.innerHTML = '<tr><td colspan="7" style="color:var(--muted);text-align:center;padding:24px;">No products yet. Add your first product!</td></tr>'; return; }
+    tbody.innerHTML = list.map(p => `
+      <tr>
+        <td><div class="product-thumb">${p.imageUrl?`<img src="${p.imageUrl}" alt="">`:(p.name?.slice(0,3)||"IMG")}</div></td>
+        <td><strong>${p.name}</strong>${p.featured?'<span style="font-family:\'Space Mono\',monospace;font-size:8px;letter-spacing:1px;color:var(--accent);margin-left:8px;">FEATURED</span>':""}</td>
+        <td style="color:var(--muted);font-size:12px;">${p.category||"—"}</td>
+        <td style="font-family:'Space Mono',monospace;font-size:12px;">₦${Number(p.price).toLocaleString()}</td>
+        <td style="font-size:12px;">${p.stock||"—"}</td>
+        <td>${p.badge?`<span class="status-badge paid">${p.badge}</span>`:"—"}</td>
+        <td><div class="action-btns"><button class="action-btn edit" onclick="editProduct('${p.id}')">Edit</button><button class="action-btn del" onclick="confirmDelete('${p.id}','${p.name}')">Delete</button></div></td>
+      </tr>
+    `).join("");
+  }
+
+  document.getElementById("productSearch").addEventListener("input", e => {
+    const q = e.target.value.toLowerCase();
+    renderProducts(allProducts.filter(p => p.name?.toLowerCase().includes(q) || p.category?.toLowerCase().includes(q)));
+  });
+
+  // Modal
+  function openModal(title) {
+    document.getElementById("modalTitle").textContent = title;
+    document.getElementById("productModal").classList.add("open");
+  }
+  function closeModal() {
+    document.getElementById("productModal").classList.remove("open");
+    clearModal();
+  }
+  function clearModal() {
+    ["editProductId","pImageUrl","pName","pPrice","pOldPrice","pStock","pDesc"].forEach(id => document.getElementById(id).value="");
+    document.getElementById("pCategory").value = "Essentials";
+    document.getElementById("pBadge").value = "";
+    document.getElementById("pFeatured").checked = false;
+    document.querySelectorAll(".size-check input").forEach(c => c.checked = ["M","L","XL"].includes(c.value));
+    document.getElementById("imgPreview").innerHTML = '<span class="img-preview-placeholder">No image yet</span>';
+  }
+
+  document.getElementById("addProductBtn").addEventListener("click", () => { clearModal(); openModal("Add Product"); });
+  document.getElementById("closeModal").addEventListener("click", closeModal);
+  document.getElementById("cancelModal").addEventListener("click", closeModal);
+
+  document.getElementById("pImageUrl").addEventListener("input", e => {
+    const url = e.target.value;
+    const prev = document.getElementById("imgPreview");
+    if (url) prev.innerHTML = `<img src="${url}" alt="" onerror="this.parentElement.innerHTML='<span class=\'img-preview-placeholder\'>Invalid URL</span>'">`;
+    else prev.innerHTML = '<span class="img-preview-placeholder">No image yet</span>';
+  });
+
+  window.editProduct = (id) => {
+    const p = allProducts.find(x => x.id === id);
+    if (!p) return;
+    openModal("Edit Product");
+    document.getElementById("editProductId").value = id;
+    document.getElementById("pName").value     = p.name || "";
+    document.getElementById("pImageUrl").value = p.imageUrl || "";
+    document.getElementById("pPrice").value    = p.price || "";
+    document.getElementById("pOldPrice").value = p.oldPrice || "";
+    document.getElementById("pStock").value    = p.stock || "";
+    document.getElementById("pCategory").value = p.category || "Essentials";
+    document.getElementById("pBadge").value    = p.badge || "";
+    document.getElementById("pDesc").value     = p.description || "";
+    document.getElementById("pFeatured").checked = p.featured || false;
+    document.querySelectorAll(".size-check input").forEach(c => c.checked = (p.sizes||[]).includes(c.value));
+    if (p.imageUrl) document.getElementById("imgPreview").innerHTML = `<img src="${p.imageUrl}" alt="">`;
+  };
+
+  window.confirmDelete = async (id, name) => {
+    if (!confirm(`Delete "${name}"? This cannot be undone.`)) return;
+    try {
+      await deleteProduct(id);
+      toast(`"${name}" deleted.`);
+      loadProducts();
+    } catch(e) { toast("Failed to delete.", "e"); }
+  };
+
+  document.getElementById("saveProductBtn").addEventListener("click", async () => {
+    const name = document.getElementById("pName").value.trim();
+    const price = document.getElementById("pPrice").value;
+    if (!name || !price) { toast("Name and price are required.", "e"); return; }
+
+    const sizes = [...document.querySelectorAll(".size-check input:checked")].map(c => c.value);
+
+    const data = {
+      name,
+      price:       Number(price),
+      oldPrice:    Number(document.getElementById("pOldPrice").value) || null,
+      stock:       Number(document.getElementById("pStock").value) || 0,
+      category:    document.getElementById("pCategory").value,
+      badge:       document.getElementById("pBadge").value || null,
+      description: document.getElementById("pDesc").value.trim(),
+      imageUrl:    document.getElementById("pImageUrl").value.trim() || null,
+      featured:    document.getElementById("pFeatured").checked,
+      sizes
+    };
+
+    const btn = document.getElementById("saveProductBtn");
+    btn.classList.add("loading"); btn.disabled = true;
+
+    try {
+      const editId = document.getElementById("editProductId").value;
+      if (editId) { await updateProduct(editId, data); toast("Product updated!"); }
+      else         { await addProduct(data); toast("Product added!"); }
+      closeModal();
+      loadProducts();
+      loadDashboard();
+    } catch(e) {
+      toast("Failed to save product. " + e.message, "e");
+    }
+    btn.classList.remove("loading"); btn.disabled = false;
+  });
+
+  // ── ORDERS ──
+  let allOrders = [], currentFilter = "all";
+  async function loadOrders() {
+    allOrders = await getOrders();
+    renderOrders();
+  }
+
+  function renderOrders() {
+    const list = currentFilter === "all" ? allOrders : allOrders.filter(o => o.status === currentFilter);
+    const tbody = document.getElementById("ordersBody");
+    if (!list.length) { tbody.innerHTML = '<tr><td colspan="7" style="color:var(--muted);text-align:center;padding:24px;">No orders found.</td></tr>'; return; }
+    tbody.innerHTML = list.map(o => `
+      <tr>
+        <td style="font-family:'Space Mono',monospace;font-size:10px;color:var(--accent);">${o.orderRef||o.id.slice(0,8)}</td>
+        <td><strong>${o.name||"Guest"}</strong><br><span style="font-size:11px;color:var(--muted);">${o.email||""}</span></td>
+        <td style="font-size:12px;">${(o.items||[]).length} item(s)</td>
+        <td style="font-family:'Space Mono',monospace;font-size:12px;">₦${Number(o.total||0).toLocaleString()}</td>
+        <td><span class="status-badge ${o.status}">${o.status}</span></td>
+        <td style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);">${o.createdAt?.toDate?.().toLocaleDateString()||"—"}</td>
+        <td>
+          <select style="background:var(--black);border:1px solid var(--border);color:var(--white);font-family:'Space Mono',monospace;font-size:9px;padding:5px 8px;cursor:pointer;" onchange="changeOrderStatus('${o.id}',this.value)">
+            <option value="pending"   ${o.status==="pending"   ?"selected":""}>Pending</option>
+            <option value="paid"      ${o.status==="paid"      ?"selected":""}>Paid</option>
+            <option value="shipped"   ${o.status==="shipped"   ?"selected":""}>Shipped</option>
+            <option value="delivered" ${o.status==="delivered" ?"selected":""}>Delivered</option>
+            <option value="cancelled" ${o.status==="cancelled" ?"selected":""}>Cancelled</option>
+          </select>
+        </td>
+      </tr>
+    `).join("");
+  }
+
+  window.changeOrderStatus = async (id, status) => {
+    try {
+      await updateOrderStatus(id, status);
+      const order = allOrders.find(o => o.id === id);
+      if (order) order.status = status;
+      renderOrders();
+      toast("Order status updated!");
+    } catch(e) { toast("Failed to update.", "e"); }
+  };
+
+  document.querySelectorAll(".tab-btn[data-filter]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".tab-btn[data-filter]").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      currentFilter = btn.dataset.filter;
+      renderOrders();
+    });
+  });
+
+  // ── CUSTOMERS ──
+  let allCustomers = [];
+  async function loadCustomers() {
+    allCustomers = await getCustomers();
+    renderCustomers(allCustomers);
+  }
+
+  function renderCustomers(list) {
+    const tbody = document.getElementById("customersBody");
+    if (!list.length) { tbody.innerHTML = '<tr><td colspan="5" style="color:var(--muted);text-align:center;padding:24px;">No customers yet.</td></tr>'; return; }
+    tbody.innerHTML = list.map(c => `
+      <tr>
+        <td><strong>${c.fullName||c.displayName||"—"}</strong></td>
+        <td style="font-size:12px;color:var(--muted);">${c.email||"—"}</td>
+        <td><span class="status-badge ${c.role==="admin"?"paid":"pending"}">${c.role||"customer"}</span></td>
+        <td style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);">${c.createdAt?.toDate?.().toLocaleDateString()||"—"}</td>
+        <td>
+          <button class="action-btn edit" onclick="makeAdmin('${c.uid}','${c.role}')">
+            ${c.role==="admin"?"Remove Admin":"Make Admin"}
+          </button>
+        </td>
+      </tr>
+    `).join("");
+  }
+
+  document.getElementById("customerSearch").addEventListener("input", e => {
+    const q = e.target.value.toLowerCase();
+    renderCustomers(allCustomers.filter(c => c.fullName?.toLowerCase().includes(q) || c.email?.toLowerCase().includes(q)));
+  });
+
+  window.makeAdmin = async (uid, currentRole) => {
+    const newRole = currentRole === "admin" ? "customer" : "admin";
+    if (!confirm(`Change role to "${newRole}"?`)) return;
+    try {
+      await updateDoc(doc(db, "users", uid), { role: newRole, updatedAt: serverTimestamp() });
+      toast(`Role updated to ${newRole}.`);
+      loadCustomers();
+    } catch(e) { toast("Failed to update role.", "e"); }
+  };
+
+  // ── CHATS ──
+  async function loadChats() {
+    try {
+      const msgs = await getAllChats();
+      const container = document.getElementById("chatsContainer");
+      if (!msgs.length) { container.innerHTML = '<p style="font-family:\'Space Mono\',monospace;font-size:10px;letter-spacing:2px;color:var(--muted);text-align:center;padding:40px;text-transform:uppercase;">No messages yet.</p>'; return; }
+      container.innerHTML = msgs.map(m => `
+        <div style="background:var(--mid);border:1px solid var(--border);padding:16px 20px;display:flex;justify-content:space-between;align-items:flex-start;gap:16px;">
+          <div>
+            <div style="font-size:13px;line-height:1.6;">${m.text}</div>
+            <div style="font-family:'Space Mono',monospace;font-size:9px;color:var(--muted);margin-top:6px;letter-spacing:1px;">${m.userName||"Guest"} · ${m.userEmail||""} · ${m.createdAt?.toDate?.().toLocaleString()||"—"}</div>
+          </div>
+          <span class="status-badge ${m.isAdmin?"paid":"pending"}">${m.isAdmin?"Admin":"User"}</span>
+        </div>
+      `).join("");
+    } catch(e) {
+      document.getElementById("chatsContainer").innerHTML = '<p style="color:var(--muted);text-align:center;padding:40px;">Failed to load chats.</p>';
+    }
+  }
+
+  // Logout
+  document.getElementById("adminLogout").addEventListener("click", () => logout());
+</script>
+</body>
+</html>

@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Account — ZEE CLOTHING</title>
+  <link rel="stylesheet" href="/zee-clothing/css/main.css">
+  <style>
+    body { display: block; }
+    .account-layout { display: grid; grid-template-columns: 240px 1fr; min-height: 100vh; }
+    .acc-sidebar { background: var(--mid); border-right: 1px solid var(--border); display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; }
+    .acc-sidebar-header { padding: 28px 24px; border-bottom: 1px solid var(--border); }
+    .acc-logo { font-family: 'Bebas Neue', sans-serif; font-size: 26px; letter-spacing: 3px; display: block; margin-bottom: 20px; }
+    .acc-avatar { width: 44px; height: 44px; border-radius: 50%; background: var(--border); display: flex; align-items: center; justify-content: center; font-family: 'Bebas Neue', sans-serif; font-size: 18px; color: var(--accent); margin-bottom: 10px; overflow: hidden; }
+    .acc-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .acc-name { font-size: 14px; font-weight: 700; margin-bottom: 2px; }
+    .acc-email { font-family: 'Space Mono', monospace; font-size: 9px; color: var(--muted); letter-spacing: 0.5px; }
+    .acc-nav { flex: 1; padding: 12px 0; }
+    .acc-nav-btn { display: flex; align-items: center; gap: 10px; padding: 12px 24px; font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); border: none; background: none; width: 100%; text-align: left; cursor: pointer; transition: all 0.2s; }
+    .acc-nav-btn:hover { color: var(--white); background: rgba(255,255,255,0.02); }
+    .acc-nav-btn.active { color: var(--accent); border-left: 2px solid var(--accent); padding-left: 22px; }
+    .acc-main { padding: 48px; overflow-y: auto; }
+    .acc-page-title { font-family: 'Bebas Neue', sans-serif; font-size: 40px; letter-spacing: 1px; margin-bottom: 4px; }
+    .acc-page-sub { font-size: 13px; color: var(--muted); margin-bottom: 32px; }
+    .acc-card { background: var(--mid); border: 1px solid var(--border); padding: 24px; margin-bottom: 20px; }
+    .acc-card-title { font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+    .order-card { background: var(--mid); border: 1px solid var(--border); padding: 20px; margin-bottom: 12px; }
+    .order-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+    .order-ref { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--accent); letter-spacing: 1px; }
+    .order-date { font-family: 'Space Mono', monospace; font-size: 9px; color: var(--muted); }
+    .order-item { display: flex; justify-content: space-between; font-size: 12px; padding: 6px 0; border-bottom: 1px solid rgba(34,34,34,0.5); }
+    .order-total { display: flex; justify-content: space-between; margin-top: 10px; font-family: 'Space Mono', monospace; font-size: 12px; }
+    .empty-orders { text-align: center; padding: 60px 20px; border: 1px dashed var(--border); }
+    .empty-orders-icon { font-family: 'Bebas Neue', sans-serif; font-size: 56px; color: var(--border); }
+    @media (max-width: 768px) { .account-layout { grid-template-columns: 1fr; } .acc-sidebar { height: auto; position: static; } .acc-main { padding: 24px; } }
+  </style>
+</head>
+<body>
+<div class="toast-wrap" id="toastWrap"></div>
+
+<div class="account-layout">
+  <div class="acc-sidebar">
+    <div class="acc-sidebar-header">
+      <a href="/zee-clothing/index.html" class="acc-logo">ZEE</a>
+      <div class="acc-avatar" id="accAvatar"></div>
+      <div class="acc-name" id="accName">Loading...</div>
+      <div class="acc-email" id="accEmail"></div>
+    </div>
+    <nav class="acc-nav">
+      <button class="acc-nav-btn active" data-tab="profile">◈ Profile</button>
+      <button class="acc-nav-btn" data-tab="orders">◐ My Orders</button>
+      <button class="acc-nav-btn" data-tab="security">◉ Security</button>
+    </nav>
+    <div style="padding:16px 24px; border-top:1px solid var(--border);">
+      <a href="/zee-clothing/index.html" class="acc-nav-btn" style="padding-left:0; text-decoration:none; display:flex; align-items:center; gap:10px;">🛍 Shop</a>
+      <button class="acc-nav-btn" id="accLogout" style="padding-left:0;">→ Log Out</button>
+    </div>
+  </div>
+
+  <main class="acc-main">
+
+    <!-- Profile -->
+    <div id="tab-profile">
+      <div class="acc-page-title">My Profile</div>
+      <div class="acc-page-sub">Manage your personal information.</div>
+      <div class="acc-card">
+        <div class="acc-card-title">Personal Details</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+          <div class="field"><label>Full Name</label><input type="text" id="pName"></div>
+          <div class="field"><label>Phone Number</label><input type="text" id="pPhone" placeholder="+234..."></div>
+        </div>
+        <div class="field"><label>Delivery Address</label><input type="text" id="pAddress" placeholder="Street, City, State"></div>
+        <button class="btn btn-accent" id="saveProfileBtn">Save Changes</button>
+      </div>
+    </div>
+
+    <!-- Orders -->
+    <div id="tab-orders" style="display:none;">
+      <div class="acc-page-title">My Orders</div>
+      <div class="acc-page-sub">Your purchase history.</div>
+      <div id="ordersContainer">
+        <div class="empty-orders">
+          <div class="empty-orders-icon">◈</div>
+          <h3 style="font-family:'Bebas Neue',sans-serif;font-size:28px;margin:8px 0;">No Orders Yet</h3>
+          <p style="font-size:13px;color:var(--muted);">When you place an order it'll show up here.</p>
+          <a href="../index.html#shop" class="btn btn-accent" style="display:inline-block;margin-top:20px;">Shop Now</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Security -->
+    <div id="tab-security" style="display:none;">
+      <div class="acc-page-title">Security</div>
+      <div class="acc-page-sub">Change your password.</div>
+      <div class="acc-card">
+        <div class="acc-card-title">Change Password</div>
+        <div class="field"><label>Current Password</label><div class="pw-wrap"><input type="password" id="sCurrent"><button class="pw-toggle" onclick="togglePw('sCurrent',this)">SHOW</button></div><p class="field-error" id="sCurErr"></p></div>
+        <div class="field"><label>New Password</label><div class="pw-wrap"><input type="password" id="sNew"><button class="pw-toggle" onclick="togglePw('sNew',this)">SHOW</button></div><p class="field-error" id="sNewErr"></p></div>
+        <div class="field"><label>Confirm New Password</label><input type="password" id="sConfirm"><p class="field-error" id="sConErr"></p></div>
+        <button class="btn btn-accent" id="changePwBtn">Update Password</button>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+  function togglePw(id, btn) {
+    const inp = document.getElementById(id);
+    inp.type = inp.type === "password" ? "text" : "password";
+    btn.textContent = inp.type === "password" ? "SHOW" : "HIDE";
+  }
+</script>
+
+<script type="module">
+  import { auth } from "/zee-clothing/js/firebase-config.js";
+  import { logout, getUserData, updateUserProfile } from "/zee-clothing/js/auth.js";
+  import { getUserOrders } from "/zee-clothing/js/store.js";
+  import { onAuthStateChanged, updatePassword, reauthenticateWithCredential, EmailAuthProvider } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+  function toast(msg, type="s") {
+    const w = document.getElementById("toastWrap");
+    const t = document.createElement("div");
+    t.className = `toast ${type}`;
+    t.innerHTML = `<span class="toast-icon">${type==="s"?"✓":"✕"}</span><span>${msg}</span>`;
+    w.appendChild(t);
+    setTimeout(() => t.remove(), 4000);
+  }
+
+  function setErr(id, msg) {
+    const el = document.getElementById(id);
+    el.textContent = msg; el.classList.toggle("show", !!msg);
+  }
+
+  // Auth guard
+  onAuthStateChanged(auth, async user => {
+    if (!user) { window.location.href = "/zee-clothing/pages/login.html"; return; }
+    const data = await getUserData(user.uid);
+    const displayName = data?.fullName || user.displayName || "ZEE User";
+    const initials = displayName.split(" ").map(w=>w[0]).join("").toUpperCase().slice(0,2);
+    const avatarEl = document.getElementById("accAvatar");
+    avatarEl.innerHTML = user.photoURL ? `<img src="${user.photoURL}">` : initials;
+    document.getElementById("accName").textContent  = displayName;
+    document.getElementById("accEmail").textContent = user.email;
+    document.getElementById("pName").value    = data?.fullName || "";
+    document.getElementById("pPhone").value   = data?.phone    || "";
+    document.getElementById("pAddress").value = data?.address  || "";
+    loadOrders();
+  });
+
+  // Tabs
+  document.querySelectorAll(".acc-nav-btn[data-tab]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".acc-nav-btn").forEach(b => b.classList.remove("active"));
+      document.querySelectorAll("#tab-profile,#tab-orders,#tab-security").forEach(t => t.style.display="none");
+      btn.classList.add("active");
+      document.getElementById("tab-"+btn.dataset.tab).style.display = "block";
+    });
+  });
+
+  // Save profile
+  document.getElementById("saveProfileBtn").addEventListener("click", async () => {
+    const btn = document.getElementById("saveProfileBtn");
+    btn.disabled = true; btn.textContent = "Saving...";
+    try {
+      await updateUserProfile({
+        fullName: document.getElementById("pName").value.trim(),
+        phone:    document.getElementById("pPhone").value.trim(),
+        address:  document.getElementById("pAddress").value.trim()
+      });
+      toast("Profile updated!");
+    } catch(e) { toast(e.message, "e"); }
+    btn.disabled = false; btn.textContent = "Save Changes";
+  });
+
+  // Load orders
+  async function loadOrders() {
+    try {
+      const orders = await getUserOrders();
+      const container = document.getElementById("ordersContainer");
+      if (!orders.length) return;
+      container.innerHTML = orders.map(o => `
+        <div class="order-card">
+          <div class="order-header">
+            <span class="order-ref">${o.orderRef||o.id.slice(0,8)}</span>
+            <span class="status-badge ${o.status}">${o.status}</span>
+          </div>
+          ${(o.items||[]).map(i=>`<div class="order-item"><span>${i.name} × ${i.qty}</span><span style="font-family:'Space Mono',monospace;">₦${(i.price*i.qty).toLocaleString()}</span></div>`).join("")}
+          <div class="order-total"><span>Total</span><span style="color:var(--accent);">₦${Number(o.total||0).toLocaleString()}</span></div>
+          <div class="order-date" style="margin-top:10px;">${o.createdAt?.toDate?.().toLocaleDateString()||"—"}</div>
+        </div>
+      `).join("");
+    } catch(e) { console.log(e); }
+  }
+
+  // Change password
+  document.getElementById("changePwBtn").addEventListener("click", async () => {
+    ["sCurErr","sNewErr","sConErr"].forEach(id => setErr(id,""));
+    const current = document.getElementById("sCurrent").value;
+    const newPw   = document.getElementById("sNew").value;
+    const confirm = document.getElementById("sConfirm").value;
+    if (!current)          { setErr("sCurErr","Required."); return; }
+    if (!newPw||newPw.length<8) { setErr("sNewErr","Min 8 characters."); return; }
+    if (newPw!==confirm)   { setErr("sConErr","Passwords don't match."); return; }
+    try {
+      const user = auth.currentUser;
+      const cred = EmailAuthProvider.credential(user.email, current);
+      await reauthenticateWithCredential(user, cred);
+      await updatePassword(user, newPw);
+      toast("Password updated!");
+      ["sCurrent","sNew","sConfirm"].forEach(id => document.getElementById(id).value="");
+    } catch(e) {
+      const map = { "auth/wrong-password":"Current password is incorrect.", "auth/requires-recent-login":"Please log out and log in again first." };
+      toast(map[e.code]||e.message, "e");
+    }
+  });
+
+  document.getElementById("accLogout").addEventListener("click", () => logout());
+</script>
+</body>
+</html>

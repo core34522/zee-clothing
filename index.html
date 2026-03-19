@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ZEE CLOTHING — Wear Your Identity</title>
+  <link rel="stylesheet" href="/zee-clothing/css/main.css">
+  <style>
+    body { cursor: none; }
+    .cursor {
+      width: 10px; height: 10px; background: var(--accent); border-radius: 50%;
+      position: fixed; pointer-events: none; z-index: 9999;
+      transform: translate(-50%,-50%); transition: width 0.2s, height 0.2s;
+    }
+    .cursor.big { width: 36px; height: 36px; background: rgba(200,255,0,0.15); }
+
+    .hero {
+      min-height: 100vh; display: grid; grid-template-columns: 55% 45%;
+      position: relative; overflow: hidden;
+    }
+    .hero-left {
+      display: flex; flex-direction: column; justify-content: center;
+      padding: 140px 60px 80px; position: relative; z-index: 2;
+    }
+    .eyebrow {
+      font-family: 'Space Mono', monospace; font-size: 11px;
+      letter-spacing: 4px; text-transform: uppercase; color: var(--accent);
+      margin-bottom: 20px; opacity: 0; animation: fadeUp 0.8s 0.2s forwards;
+    }
+    .hero-title {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(90px, 11vw, 155px); line-height: 0.88; letter-spacing: 2px;
+      opacity: 0; animation: fadeUp 0.8s 0.4s forwards;
+    }
+    .hero-title .ac { color: var(--accent); }
+    .hero-sub {
+      margin-top: 26px; max-width: 380px; font-size: 15px;
+      color: var(--muted); line-height: 1.8;
+      opacity: 0; animation: fadeUp 0.8s 0.6s forwards;
+    }
+    .hero-actions {
+      margin-top: 40px; display: flex; gap: 16px;
+      opacity: 0; animation: fadeUp 0.8s 0.8s forwards;
+    }
+    .hero-stats {
+      margin-top: 56px; display: flex; gap: 44px;
+      opacity: 0; animation: fadeUp 0.8s 1s forwards;
+    }
+    .stat-n { font-family: 'Bebas Neue', sans-serif; font-size: 42px; color: var(--accent); line-height: 1; }
+    .stat-l { font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-top: 3px; }
+    .hero-right { position: relative; overflow: hidden; background: var(--mid); border-left: 1px solid var(--border); }
+    .hero-right-inner { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; flex-direction: column; }
+    .hero-ghost { font-family: 'Bebas Neue', sans-serif; font-size: clamp(110px,15vw,210px); color: transparent; -webkit-text-stroke: 1px rgba(200,255,0,0.1); line-height: 0.85; user-select: none; }
+    .hero-badge { position: absolute; bottom: 56px; right: 56px; width: 130px; height: 130px; border: 1px solid var(--border); border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; animation: spin 16s linear infinite; }
+    .badge-main { font-family: 'Bebas Neue', sans-serif; font-size: 24px; color: var(--accent); line-height: 1; }
+    .badge-sub { font-family: 'Space Mono', monospace; font-size: 8px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; margin-top: 4px; }
+
+    .ticker { overflow: hidden; padding: 13px 0; background: var(--accent); }
+    .ticker-track { display: flex; width: max-content; animation: ticker 20s linear infinite; }
+    .ticker-item { font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: var(--black); padding: 0 36px; white-space: nowrap; border-right: 1px solid rgba(0,0,0,0.12); }
+
+    .products-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 52px; }
+    .view-all-link { font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--border); padding-bottom: 3px; transition: all 0.2s; }
+    .view-all-link:hover { color: var(--accent); border-color: var(--accent); }
+
+    .products-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 2px; }
+    .pcard { background: var(--card); position: relative; overflow: hidden; cursor: pointer; }
+    .pcard-img { width: 100%; aspect-ratio: 3/4; background: var(--mid); display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+    .pcard-placeholder { font-family: 'Bebas Neue', sans-serif; font-size: 64px; color: var(--border); letter-spacing: 2px; }
+    .pcard-img img { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; }
+    .pcard-hover { position: absolute; inset: 0; background: rgba(200,255,0,0.04); opacity: 0; transition: opacity 0.3s; }
+    .pcard:hover .pcard-hover { opacity: 1; }
+    .pcard-add { position: absolute; bottom: 0; left: 0; right: 0; background: var(--accent); color: var(--black); font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; font-weight: 700; padding: 13px; text-align: center; transform: translateY(100%); transition: transform 0.3s; border: none; cursor: pointer; width: 100%; }
+    .pcard:hover .pcard-add { transform: translateY(0); }
+    .pcard-badge { position: absolute; top: 14px; left: 14px; background: var(--accent); color: var(--black); font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 1px; text-transform: uppercase; font-weight: 700; padding: 3px 9px; }
+    .pcard-badge.sale { background: var(--error); color: white; }
+    .pcard-info { padding: 18px 22px; border-top: 1px solid var(--border); }
+    .pcard-cat { font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 5px; }
+    .pcard-name { font-size: 16px; font-weight: 700; margin-bottom: 9px; }
+    .pcard-price { font-family: 'Space Mono', monospace; font-size: 14px; color: var(--accent); }
+    .pcard-price s { color: var(--muted); font-size: 11px; margin-left: 8px; }
+
+    .size-selector { display: flex; gap: 8px; margin: 10px 0; flex-wrap: wrap; }
+    .size-btn { background: var(--black); border: 1px solid var(--border); color: var(--muted); font-family: 'Space Mono', monospace; font-size: 9px; padding: 4px 10px; cursor: pointer; transition: all 0.2s; text-transform: uppercase; letter-spacing: 1px; }
+    .size-btn.selected { border-color: var(--accent); color: var(--accent); }
+    .size-btn:hover { border-color: var(--white); color: var(--white); }
+
+    .features-bar { display: grid; grid-template-columns: repeat(4,1fr); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); background: var(--mid); }
+    .fbar-item { padding: 40px 32px; border-right: 1px solid var(--border); }
+    .fbar-item:last-child { border-right: none; }
+    .fbar-num { font-family: 'Bebas Neue', sans-serif; font-size: 48px; color: var(--accent); line-height: 1; margin-bottom: 10px; }
+    .fbar-title { font-size: 14px; font-weight: 700; margin-bottom: 5px; }
+    .fbar-desc { font-size: 12px; color: var(--muted); line-height: 1.7; }
+
+    .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
+    .about-values { margin-top: 36px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .val-item { border: 1px solid var(--border); padding: 18px; }
+    .val-icon { font-family: 'Bebas Neue', sans-serif; font-size: 26px; color: var(--accent); margin-bottom: 8px; }
+    .val-title { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+    .val-desc { font-size: 11px; color: var(--muted); line-height: 1.6; }
+    .about-right-text { font-family: 'Bebas Neue', sans-serif; font-size: clamp(90px,13vw,170px); color: transparent; -webkit-text-stroke: 1px rgba(200,255,0,0.07); line-height: 0.85; user-select: none; }
+    .about-quote-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 100%; text-align: center; }
+    .about-right { position: relative; }
+
+    .newsletter-section { background: var(--accent); padding: 100px 60px; text-align: center; }
+    .nl-tag { font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 4px; text-transform: uppercase; color: rgba(0,0,0,0.5); margin-bottom: 14px; }
+    .nl-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(52px,8vw,96px); color: var(--black); line-height: 0.9; }
+    .nl-sub { font-size: 14px; color: rgba(0,0,0,0.6); margin-top: 16px; max-width: 380px; margin-left: auto; margin-right: auto; line-height: 1.7; }
+    .nl-form { margin-top: 36px; display: flex; max-width: 440px; margin-left: auto; margin-right: auto; }
+    .nl-input { flex: 1; padding: 15px 18px; background: var(--black); color: var(--white); border: none; outline: none; font-family: 'Syne', sans-serif; font-size: 14px; }
+    .nl-input::placeholder { color: var(--muted); }
+    .nl-btn { padding: 15px 24px; background: var(--black); color: var(--accent); border: none; cursor: pointer; font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 2px; font-weight: 700; text-transform: uppercase; transition: opacity 0.2s; white-space: nowrap; }
+    .nl-btn:hover { opacity: 0.8; }
+
+    .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: start; }
+    .contact-item { padding-top: 20px; border-top: 1px solid var(--border); margin-top: 24px; }
+    .c-label { font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+    .c-value { font-size: 14px; font-weight: 700; }
+    .c-value a { color: var(--accent); }
+    .social-row { margin-top: 32px; display: flex; gap: 12px; flex-wrap: wrap; }
+    .soc-btn { font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 2px; text-transform: uppercase; padding: 9px 18px; border: 1px solid var(--border); color: var(--muted); transition: all 0.2s; }
+    .soc-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    footer { padding: 56px 60px 28px; border-top: 1px solid var(--border); }
+    .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 40px; margin-bottom: 40px; padding-bottom: 40px; border-bottom: 1px solid var(--border); }
+    .footer-logo { font-family: 'Bebas Neue', sans-serif; font-size: 36px; letter-spacing: 4px; display: block; margin-bottom: 14px; }
+    .footer-desc { font-size: 12px; color: var(--muted); line-height: 1.8; max-width: 190px; }
+    .footer-col-title { font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); margin-bottom: 18px; }
+    .footer-links { list-style: none; display: flex; flex-direction: column; gap: 11px; }
+    .footer-links a { font-size: 12px; color: #666; transition: color 0.2s; }
+    .footer-links a:hover { color: var(--white); }
+    .footer-bottom { display: flex; justify-content: space-between; align-items: center; }
+    .footer-copy { font-family: 'Space Mono', monospace; font-size: 9px; color: var(--muted); letter-spacing: 1px; }
+    .footer-soc { display: flex; gap: 20px; }
+    .footer-soc a { font-family: 'Space Mono', monospace; font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; transition: color 0.2s; }
+    .footer-soc a:hover { color: var(--accent); }
+
+    @keyframes ticker { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+    @media (max-width: 900px) {
+      .hero { grid-template-columns: 1fr; }
+      .hero-right { height: 280px; }
+      .products-grid { grid-template-columns: 1fr 1fr; }
+      .features-bar { grid-template-columns: 1fr 1fr; }
+      .about-grid { grid-template-columns: 1fr; }
+      .about-right { display: none; }
+      .contact-grid { grid-template-columns: 1fr; }
+      .footer-grid { grid-template-columns: 1fr 1fr; }
+      .footer-bottom { flex-direction: column; gap: 14px; }
+      .newsletter-section { padding: 60px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="toast-wrap" id="toastWrap"></div>
+
+<!-- NAV -->
+<nav class="site-nav">
+  <a href="index.html" class="nav-logo">ZEE</a>
+  <ul class="nav-links">
+    <li><a href="#shop">Shop</a></li>
+    <li><a href="#about">About</a></li>
+    <li><a href="#contact">Contact</a></li>
+    <li><a href="/zee-clothing/pages/account.html" id="navAccount" style="display:none;">My Account</a></li>
+  </ul>
+  <div class="nav-right">
+    <button class="nav-cart" id="cartToggle">
+      Cart <span id="cart-count"></span>
+    </button>
+    <a href="/zee-clothing/pages/login.html" class="nav-btn outline" id="navLogin">Login</a>
+    <a href="/zee-clothing/pages/signup.html" class="nav-btn solid" id="navSignup">Sign Up</a>
+    <button class="nav-btn outline" id="navLogout" style="display:none;">Log Out</button>
+  </div>
+</nav>
+
+<!-- CART DRAWER -->
+<div class="cart-overlay" id="cartOverlay"></div>
+<div class="cart-drawer" id="cartDrawer">
+  <div class="cart-header">
+    <span class="cart-title">Your Cart</span>
+    <button class="cart-close" id="cartClose">✕</button>
+  </div>
+  <div class="cart-items" id="cartItems"></div>
+  <div class="cart-footer">
+    <div class="cart-total-row">
+      <span class="cart-total-label">Total</span>
+      <span class="cart-total-amount" id="cartTotal">₦0</span>
+    </div>
+    <a href="/zee-clothing/pages/checkout.html" class="btn btn-accent" style="width:100%; display:block;">Proceed to Checkout</a>
+  </div>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-left">
+    <p class="eyebrow">// SS 2025 — New Drop Available</p>
+    <h1 class="hero-title">Wear<br>Your<br><span class="ac">Identity</span></h1>
+    <p class="hero-sub">Streetwear built for those who refuse to blend in. Limited drops. No restocks. Pure culture.</p>
+    <div class="hero-actions">
+      <a href="#shop" class="btn btn-accent">Shop the Drop</a>
+      <a href="#about" class="btn btn-outline-w">Our Story</a>
+    </div>
+    <div class="hero-stats">
+      <div><div class="stat-n">500+</div><div class="stat-l">Pieces Sold</div></div>
+      <div><div class="stat-n">12</div><div class="stat-l">Drops</div></div>
+      <div><div class="stat-n">100%</div><div class="stat-l">Authentic</div></div>
+    </div>
+  </div>
+  <div class="hero-right">
+    <div class="hero-right-inner">
+      <div class="hero-ghost">ZEE</div>
+      <div class="hero-ghost">CLO</div>
+    </div>
+    <div class="hero-badge">
+      <div class="badge-main">NEW<br>DROP</div>
+      <div class="badge-sub">Limited 2025</div>
+    </div>
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker">
+  <div class="ticker-track">
+    <span class="ticker-item">★ Free Delivery Above ₦50,000</span>
+    <span class="ticker-item">★ Limited Drops — No Restocks</span>
+    <span class="ticker-item">★ Abuja-Based Streetwear</span>
+    <span class="ticker-item">★ Authentic. Bold. Uncompromising.</span>
+    <span class="ticker-item">★ 7-Day Exchange Policy</span>
+    <span class="ticker-item">★ Free Delivery Above ₦50,000</span>
+    <span class="ticker-item">★ Limited Drops — No Restocks</span>
+    <span class="ticker-item">★ Abuja-Based Streetwear</span>
+    <span class="ticker-item">★ Authentic. Bold. Uncompromising.</span>
+    <span class="ticker-item">★ 7-Day Exchange Policy</span>
+  </div>
+</div>
+
+<!-- PRODUCTS -->
+<section class="section" id="shop">
+  <div class="products-header">
+    <div>
+      <p class="tag">// Current Drop</p>
+      <h2 class="heading">The Collection</h2>
+    </div>
+    <a href="#shop" class="view-all-link">View All →</a>
+  </div>
+  <div class="products-grid" id="productsGrid">
+    <!-- Products loaded from Firestore -->
+    <div style="grid-column:1/-1; text-align:center; padding:60px; font-family:'Space Mono',monospace; font-size:11px; letter-spacing:2px; color:var(--muted); text-transform:uppercase;">
+      Loading products...
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<div class="features-bar">
+  <div class="fbar-item"><div class="fbar-num">01</div><div class="fbar-title">Premium Fabrics</div><div class="fbar-desc">Every piece made with quality materials built to last.</div></div>
+  <div class="fbar-item"><div class="fbar-num">02</div><div class="fbar-title">Limited Drops</div><div class="fbar-desc">Once it's gone, it's gone. No restocks ever.</div></div>
+  <div class="fbar-item"><div class="fbar-num">03</div><div class="fbar-title">Nationwide Delivery</div><div class="fbar-desc">Free delivery on all orders above ₦50,000.</div></div>
+  <div class="fbar-item"><div class="fbar-num">04</div><div class="fbar-title">7-Day Exchange</div><div class="fbar-desc">Not the right fit? Easy 7-day exchange policy.</div></div>
+</div>
+
+<!-- ABOUT -->
+<section class="section" id="about" style="background:var(--mid); border-top:1px solid var(--border); border-bottom:1px solid var(--border);">
+  <div class="about-grid">
+    <div>
+      <p class="tag">// Our Story</p>
+      <h2 class="heading">Born In Abuja</h2>
+      <p style="font-size:15px; color:var(--muted); line-height:1.9; margin-top:20px; max-width:460px;">
+        ZEE CLOTHING started with one simple idea — <strong style="color:var(--white);">streetwear that actually represents us.</strong>
+        Built in Abuja, designed for the bold, the creative, and those who move differently.
+        We're not just a brand. We're a <strong style="color:var(--white);">statement.</strong>
+      </p>
+      <div class="about-values">
+        <div class="val-item"><div class="val-icon">◈</div><div class="val-title">Authenticity</div><div class="val-desc">Real designs. Real culture. No compromise.</div></div>
+        <div class="val-item"><div class="val-icon">◐</div><div class="val-title">Exclusivity</div><div class="val-desc">Limited pieces for those who stand out.</div></div>
+        <div class="val-item"><div class="val-icon">◉</div><div class="val-title">Quality</div><div class="val-desc">Premium fabrics. Exceptional finish.</div></div>
+        <div class="val-item"><div class="val-icon">◑</div><div class="val-title">Community</div><div class="val-desc">A movement, not just a clothing brand.</div></div>
+      </div>
+    </div>
+    <div class="about-right">
+      <div class="about-right-text">WEAR<br>YOUR<br>SOUL</div>
+      <div class="about-quote-overlay">
+        <p style="font-family:'Bebas Neue',sans-serif; font-size:clamp(26px,3vw,38px); line-height:1.1;">
+          "Dress like<br>you mean it.<br><span style="color:var(--accent);">Every day."</span>
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- NEWSLETTER -->
+<div class="newsletter-section">
+  <p class="nl-tag">// Join the Movement</p>
+  <h2 class="nl-title">Get Early Access</h2>
+  <p class="nl-sub">Be the first to know about every new drop. No spam. Just pure streetwear culture.</p>
+  <div class="nl-form">
+    <input type="email" class="nl-input" id="nlEmail" placeholder="Enter your email address">
+    <button class="nl-btn" id="nlBtn">Subscribe</button>
+  </div>
+</div>
+
+<!-- CONTACT -->
+<section class="section" id="contact" style="background:var(--mid); border-top:1px solid var(--border);">
+  <div class="contact-grid">
+    <div>
+      <p class="tag">// Get In Touch</p>
+      <h2 class="heading">Contact Us</h2>
+      <div class="contact-item"><p class="c-label">Location</p><p class="c-value">Abuja, Nigeria</p></div>
+      <div class="contact-item"><p class="c-label">Email</p><p class="c-value"><a href="mailto:hello@zeeclothing.com">hello@zeeclothing.com</a></p></div>
+      <div class="contact-item"><p class="c-label">WhatsApp</p><p class="c-value"><a href="https://wa.me/2348000000000" style="color:var(--accent);">+234 800 000 0000</a></p></div>
+      <div class="contact-item"><p class="c-label">Hours</p><p class="c-value">Mon – Sat: 9am – 6pm</p></div>
+      <div class="social-row">
+        <a href="#" class="soc-btn">Instagram</a>
+        <a href="#" class="soc-btn">Twitter</a>
+        <a href="#" class="soc-btn">TikTok</a>
+        <a href="#" class="soc-btn">WhatsApp</a>
+      </div>
+    </div>
+    <div>
+      <p class="tag" style="margin-top:8px;">// Send a Message</p>
+      <div style="margin-top:20px;">
+        <div class="field"><label>Your Name</label><input type="text" id="cName" placeholder="John Doe"></div>
+        <div class="field"><label>Email</label><input type="email" id="cEmail" placeholder="you@example.com"></div>
+        <div class="field"><label>Subject</label><input type="text" id="cSubject" placeholder="Order inquiry, sizing..."></div>
+        <div class="field"><label>Message</label><textarea id="cMsg" placeholder="Tell us what's on your mind..."></textarea></div>
+        <button class="btn btn-accent" style="width:100%;" id="sendMsg">Send Message</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-grid">
+    <div>
+      <span class="footer-logo">ZEE</span>
+      <p class="footer-desc">Streetwear born in Abuja. Built for those who refuse to blend in. 🇳🇬</p>
+    </div>
+    <div>
+      <p class="footer-col-title">Shop</p>
+      <ul class="footer-links">
+        <li><a href="#shop">New Arrivals</a></li>
+        <li><a href="#shop">T-Shirts</a></li>
+        <li><a href="#shop">Hoodies</a></li>
+        <li><a href="#shop">Accessories</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="footer-col-title">Account</p>
+      <ul class="footer-links">
+        <li><a href="/zee-clothing/pages/login.html">Log In</a></li>
+        <li><a href="/zee-clothing/pages/signup.html">Sign Up</a></li>
+        <li><a href="/zee-clothing/pages/account.html">My Orders</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="footer-col-title">Info</p>
+      <ul class="footer-links">
+        <li><a href="#about">About ZEE</a></li>
+        <li><a href="#contact">Contact</a></li>
+        <li><a href="#">Size Guide</a></li>
+        <li><a href="#">Returns</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p class="footer-copy">© 2025 ZEE CLOTHING. All rights reserved.</p>
+    <div class="footer-soc">
+      <a href="#">Instagram</a>
+      <a href="#">Twitter</a>
+      <a href="#">TikTok</a>
+    </div>
+  </div>
+</footer>
+
+<!-- CHAT WIDGET -->
+<button class="chat-bubble" id="chatBubble" title="Chat with us">💬<span class="chat-unread" id="chatUnread"></span></button>
+<div class="chat-box" id="chatBox">
+  <div class="chat-head">
+    <div><div class="chat-head-title">ZEE Support</div><div class="chat-head-sub">Usually replies in minutes</div></div>
+    <button class="chat-close-btn" id="chatClose">✕</button>
+  </div>
+  <div class="chat-messages" id="chatMessages">
+    <div class="chat-msg admin">👋 Hey! Welcome to ZEE CLOTHING. How can we help you today?<div class="chat-msg-time">ZEE Support</div></div>
+  </div>
+  <div class="chat-input-row">
+    <input type="text" class="chat-input" id="chatInput" placeholder="Type your message...">
+    <button class="chat-send" id="chatSendBtn">Send</button>
+  </div>
+</div>
+
+<script type="module">
+  import { auth } from "/zee-clothing/js/firebase-config.js";
+  import { logout, onAuthChange } from "/zee-clothing/js/auth.js";
+  import { getProducts } from "/zee-clothing/js/store.js";
+  import { addToCart, getCart, removeFromCart, updateQty, getCartTotal, getCartCount } from "/zee-clothing/js/cart.js";
+  import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+  function toast(msg, type="s") {
+    const w = document.getElementById("toastWrap");
+    const t = document.createElement("div");
+    t.className = `toast ${type}`;
+    t.innerHTML = `<span class="toast-icon">${type==="s"?"✓":"✕"}</span><span>${msg}</span>`;
+    w.appendChild(t);
+    setTimeout(() => t.remove(), 3500);
+  }
+
+  // Auth state
+  onAuthChange((user) => {
+    document.getElementById("navLogin").style.display    = user ? "none" : "";
+    document.getElementById("navSignup").style.display   = user ? "none" : "";
+    document.getElementById("navLogout").style.display   = user ? "" : "none";
+    document.getElementById("navAccount").style.display  = user ? "" : "none";
+  });
+
+  document.getElementById("navLogout").addEventListener("click", () => logout());
+
+  // Cart
+  function renderCart() {
+    const items = getCart();
+    const container = document.getElementById("cartItems");
+    if (!items.length) {
+      container.innerHTML = '<div class="cart-empty">Your cart is empty</div>';
+    } else {
+      container.innerHTML = items.map(i => `
+        <div class="cart-item">
+          <div class="cart-item-img">${i.name?.slice(0,3).toUpperCase()}</div>
+          <div class="cart-item-info">
+            <div class="cart-item-name">${i.name}</div>
+            <div class="cart-item-size">Size: ${i.size || "One Size"}</div>
+            <div class="cart-item-price">₦${(i.price * i.qty).toLocaleString()}</div>
+            <div class="cart-item-qty">
+              <button class="qty-btn" onclick="changeQty('${i.id}','${i.size}',-1)">−</button>
+              <span class="qty-num">${i.qty}</span>
+              <button class="qty-btn" onclick="changeQty('${i.id}','${i.size}',1)">+</button>
+            </div>
+            <button class="cart-remove" onclick="removeItem('${i.id}','${i.size}')">Remove</button>
+          </div>
+        </div>
+      `).join("");
+    }
+    document.getElementById("cartTotal").textContent = "₦" + getCartTotal().toLocaleString();
+  }
+
+  window.changeQty = (id, size, delta) => {
+    const cart = getCart();
+    const item = cart.find(i => i.id===id && i.size===size);
+    if (item) { updateQty(id, size, item.qty + delta); renderCart(); }
+  };
+  window.removeItem = (id, size) => { removeFromCart(id, size); renderCart(); };
+
+  function openCart() {
+    renderCart();
+    document.getElementById("cartOverlay").classList.add("open");
+    document.getElementById("cartDrawer").classList.add("open");
+  }
+  function closeCart() {
+    document.getElementById("cartOverlay").classList.remove("open");
+    document.getElementById("cartDrawer").classList.remove("open");
+  }
+
+  document.getElementById("cartToggle").addEventListener("click", openCart);
+  document.getElementById("cartClose").addEventListener("click", closeCart);
+  document.getElementById("cartOverlay").addEventListener("click", closeCart);
+
+  // Load products
+  async function loadProducts() {
+    const grid = document.getElementById("productsGrid");
+    try {
+      const products = await getProducts();
+      if (!products.length) {
+        grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:60px; font-family:'Space Mono',monospace; font-size:11px; letter-spacing:2px; color:var(--muted); text-transform:uppercase;">No products yet. Check back soon!</div>`;
+        return;
+      }
+      grid.innerHTML = products.slice(0,6).map(p => `
+        <div class="pcard">
+          <div class="pcard-img">
+            ${p.imageUrl ? `<img src="${p.imageUrl}" alt="${p.name}">` : `<span class="pcard-placeholder">${p.name?.slice(0,3).toUpperCase()}</span>`}
+            <div class="pcard-hover"></div>
+            ${p.badge ? `<div class="pcard-badge ${p.badge==='Sale'?'sale':''}">${p.badge}</div>` : ""}
+          </div>
+          <div class="pcard-info">
+            <p class="pcard-cat">${p.category || "Essentials"}</p>
+            <h3 class="pcard-name">${p.name}</h3>
+            <div class="size-selector">
+              ${(p.sizes||["S","M","L","XL"]).map(s=>`<button class="size-btn" onclick="selectSize(this,'${p.id}')">${s}</button>`).join("")}
+            </div>
+            <p class="pcard-price">₦${Number(p.price).toLocaleString()}${p.oldPrice?`<s>₦${Number(p.oldPrice).toLocaleString()}</s>`:""}</p>
+          </div>
+          <button class="pcard-add" onclick="addItem('${p.id}','${p.name}',${p.price},'${p.category}')">+ Add to Cart</button>
+        </div>
+      `).join("");
+    } catch(e) {
+      grid.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:60px; font-family:'Space Mono',monospace; font-size:11px; letter-spacing:2px; color:var(--muted); text-transform:uppercase;">Unable to load products. Check Firebase config.</div>`;
+    }
+  }
+
+  window.selectedSizes = {};
+  window.selectSize = (btn, productId) => {
+    btn.closest(".size-selector").querySelectorAll(".size-btn").forEach(b => b.classList.remove("selected"));
+    btn.classList.add("selected");
+    window.selectedSizes[productId] = btn.textContent;
+  };
+
+  window.addItem = (id, name, price, category) => {
+    const size = window.selectedSizes[id] || "One Size";
+    addToCart({ id, name, price: Number(price), category, size });
+    openCart();
+  };
+
+  loadProducts();
+
+  // Newsletter
+  document.getElementById("nlBtn").addEventListener("click", () => {
+    const email = document.getElementById("nlEmail").value.trim();
+    if (email && email.includes("@")) {
+      toast("You're on the list! 🎉");
+      document.getElementById("nlEmail").value = "";
+    } else {
+      toast("Enter a valid email address.", "e");
+    }
+  });
+
+  // Contact form
+  document.getElementById("sendMsg").addEventListener("click", () => {
+    toast("Message sent! We'll get back to you soon. ✓");
+  });
+
+  // Chat
+  document.getElementById("chatBubble").addEventListener("click", () => {
+    document.getElementById("chatBox").classList.toggle("open");
+  });
+  document.getElementById("chatClose").addEventListener("click", () => {
+    document.getElementById("chatBox").classList.remove("open");
+  });
+  document.getElementById("chatSendBtn").addEventListener("click", sendChat);
+  document.getElementById("chatInput").addEventListener("keydown", e => { if (e.key === "Enter") sendChat(); });
+
+  function sendChat() {
+    const input = document.getElementById("chatInput");
+    const text = input.value.trim();
+    if (!text) return;
+    const msgs = document.getElementById("chatMessages");
+    const msg = document.createElement("div");
+    msg.className = "chat-msg user";
+    msg.innerHTML = `${text}<div class="chat-msg-time">${new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</div>`;
+    msgs.appendChild(msg);
+    msgs.scrollTop = msgs.scrollHeight;
+    input.value = "";
+    setTimeout(() => {
+      const reply = document.createElement("div");
+      reply.className = "chat-msg admin";
+      reply.innerHTML = `Thanks for reaching out! Our team will respond shortly. For urgent orders, WhatsApp us directly.<div class="chat-msg-time">ZEE Support</div>`;
+      msgs.appendChild(reply);
+      msgs.scrollTop = msgs.scrollHeight;
+    }, 1200);
+  }
+
+  // Custom cursor
+  const cursor = document.getElementById("cursor");
+  document.addEventListener("mousemove", e => {
+    cursor.style.left = e.clientX + "px";
+    cursor.style.top  = e.clientY + "px";
+  });
+  document.querySelectorAll("a,button,.pcard").forEach(el => {
+    el.addEventListener("mouseenter", () => cursor.classList.add("big"));
+    el.addEventListener("mouseleave", () => cursor.classList.remove("big"));
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Account — ZEE CLOTHING</title>
+  <link rel="stylesheet" href="/zee-clothing/css/main.css">
+  <style>
+    body { min-height: 100vh; display: flex; flex-direction: column; }
+    .auth-wrap { display: grid; grid-template-columns: 1fr 1fr; min-height: 100vh; }
+    .auth-brand { background: var(--mid); border-right: 1px solid var(--border); display: flex; flex-direction: column; justify-content: space-between; padding: 48px; position: relative; overflow: hidden; }
+    .brand-logo { font-family: 'Bebas Neue', sans-serif; font-size: 36px; letter-spacing: 4px; color: var(--white); }
+    .brand-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(60px,7vw,92px); line-height: 0.92; }
+    .brand-title span { color: var(--accent); display: block; }
+    .brand-sub { margin-top: 18px; font-size: 14px; color: var(--muted); line-height: 1.7; max-width: 280px; }
+    .brand-ghost { position: absolute; bottom: 30px; right: -20px; font-family: 'Bebas Neue', sans-serif; font-size: 180px; color: transparent; -webkit-text-stroke: 1px rgba(200,255,0,0.06); line-height: 1; user-select: none; pointer-events: none; }
+    .brand-quote { font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 2px; color: var(--muted); }
+    .auth-form-panel { display: flex; align-items: center; justify-content: center; padding: 60px 40px; }
+    .auth-box { width: 100%; max-width: 400px; }
+    .auth-title { font-family: 'Bebas Neue', sans-serif; font-size: 48px; letter-spacing: 2px; margin-bottom: 6px; }
+    .auth-sub { font-size: 13px; color: var(--muted); margin-bottom: 36px; line-height: 1.6; }
+    .divider { display: flex; align-items: center; gap: 12px; margin: 24px 0; }
+    .divider-line { flex: 1; height: 1px; background: var(--border); }
+    .divider-text { font-family: 'Space Mono', monospace; font-size: 9px; letter-spacing: 2px; color: var(--muted); text-transform: uppercase; }
+    .google-btn { width: 100%; background: transparent; color: var(--white); border: 1px solid var(--border); font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; padding: 13px; cursor: pointer; transition: border-color 0.2s; display: flex; align-items: center; justify-content: center; gap: 10px; }
+    .google-btn:hover { border-color: var(--white); }
+    .auth-footer-link { margin-top: 24px; text-align: center; font-size: 13px; color: var(--muted); }
+    .auth-footer-link a { color: var(--accent); font-weight: 700; }
+    .pw-strength-bar { height: 3px; background: var(--border); margin-top: 6px; }
+    .pw-strength-fill { height: 100%; width: 0; transition: width 0.3s, background 0.3s; }
+    .pw-strength-label { font-family: 'Space Mono', monospace; font-size: 9px; margin-top: 3px; color: var(--muted); }
+    .checkbox-row { display: flex; align-items: flex-start; gap: 10px; }
+    .checkbox-row input { width: 15px; height: 15px; flex-shrink: 0; margin-top: 2px; accent-color: var(--accent); cursor: pointer; }
+    .checkbox-row label { font-size: 12px; color: var(--muted); cursor: pointer; font-family: 'Syne', sans-serif; letter-spacing: 0; text-transform: none; }
+    .checkbox-row label a { color: var(--white); text-decoration: underline; }
+
+    /* OTP Step */
+    #stepOTP { display: none; }
+    .otp-inputs { display: flex; gap: 10px; justify-content: center; margin: 24px 0; }
+    .otp-digit { width: 52px; height: 60px; background: var(--mid); border: 1px solid var(--border); color: var(--white); font-family: 'Bebas Neue', sans-serif; font-size: 28px; text-align: center; outline: none; transition: border-color 0.2s; letter-spacing: 0; }
+    .otp-digit:focus { border-color: var(--accent); }
+
+    @media (max-width: 768px) { .auth-wrap { grid-template-columns: 1fr; } .auth-brand { display: none; } }
+  </style>
+</head>
+<body>
+<div class="toast-wrap" id="toastWrap"></div>
+
+<div class="auth-wrap">
+  <div class="auth-brand">
+    <a href="/zee-clothing/index.html" class="brand-logo">ZEE</a>
+    <div>
+      <h2 class="brand-title">Join The<br><span>Movement.</span></h2>
+      <p class="brand-sub">Create your account and get first access to limited drops, exclusive releases and member-only prices.</p>
+    </div>
+    <p class="brand-quote">// Wear Your Identity</p>
+    <div class="brand-ghost">ZEE</div>
+  </div>
+
+  <div class="auth-form-panel">
+    <div class="auth-box">
+
+      <!-- Step 1: Sign Up Form -->
+      <div id="stepSignup">
+        <h1 class="auth-title">Sign Up</h1>
+        <p class="auth-sub">Create your ZEE account — it's free.</p>
+
+        <div class="field">
+          <label>Full Name</label>
+          <input type="text" id="fullName" placeholder="John Doe" autocomplete="name">
+          <p class="field-error" id="nameErr"></p>
+        </div>
+
+        <div class="field">
+          <label>Email Address</label>
+          <input type="email" id="email" placeholder="you@example.com" autocomplete="email">
+          <p class="field-error" id="emailErr"></p>
+        </div>
+
+        <div class="field">
+          <label>Password</label>
+          <div class="pw-wrap">
+            <input type="password" id="password" placeholder="Min. 8 characters" autocomplete="new-password">
+            <button type="button" class="pw-toggle" id="togglePw">SHOW</button>
+          </div>
+          <div class="pw-strength-bar"><div class="pw-strength-fill" id="strengthFill"></div></div>
+          <p class="pw-strength-label" id="strengthLabel"></p>
+          <p class="field-error" id="pwErr"></p>
+        </div>
+
+        <div class="field">
+          <label>Confirm Password</label>
+          <div class="pw-wrap">
+            <input type="password" id="confirmPw" placeholder="Repeat password" autocomplete="new-password">
+            <button type="button" class="pw-toggle" id="toggleConfirm">SHOW</button>
+          </div>
+          <p class="field-error" id="confirmErr"></p>
+        </div>
+
+        <div class="field">
+          <div class="checkbox-row">
+            <input type="checkbox" id="terms">
+            <label for="terms">I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a></label>
+          </div>
+          <p class="field-error" id="termsErr"></p>
+        </div>
+
+        <button class="btn btn-accent" style="width:100%; margin-top:8px;" id="signupBtn">
+          <span class="btn-text">Create Account</span>
+        </button>
+
+        <div class="divider"><div class="divider-line"></div><span class="divider-text">or</span><div class="divider-line"></div></div>
+
+        <button class="google-btn" id="googleBtn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+          </svg>
+          Continue with Google
+        </button>
+
+        <div class="auth-footer-link">Already have an account? <a href="/zee-clothing/pages/login.html">Log in</a></div>
+      </div>
+
+      <!-- Step 2: OTP Verification -->
+      <div id="stepOTP">
+        <h1 class="auth-title">Verify Email</h1>
+        <p class="auth-sub">We sent a 6-digit code to <strong id="otpEmailDisplay" style="color:var(--white);"></strong>. Enter it below.</p>
+
+        <div class="otp-inputs">
+          <input type="text" class="otp-digit" maxlength="1" inputmode="numeric">
+          <input type="text" class="otp-digit" maxlength="1" inputmode="numeric">
+          <input type="text" class="otp-digit" maxlength="1" inputmode="numeric">
+          <input type="text" class="otp-digit" maxlength="1" inputmode="numeric">
+          <input type="text" class="otp-digit" maxlength="1" inputmode="numeric">
+          <input type="text" class="otp-digit" maxlength="1" inputmode="numeric">
+        </div>
+
+        <p class="field-error" id="otpErr" style="text-align:center;"></p>
+
+        <button class="btn btn-accent" style="width:100%; margin-top:8px;" id="verifyBtn">
+          <span class="btn-text">Verify & Continue</span>
+        </button>
+
+        <p style="margin-top:20px; text-align:center; font-size:12px; color:var(--muted);">
+          Didn't receive it? <a href="#" id="resendOtp" style="color:var(--accent); font-weight:700;">Resend code</a>
+        </p>
+        <p style="margin-top:12px; text-align:center; font-size:12px; color:var(--muted);">
+          <a href="#" id="backToSignup" style="color:var(--muted);">← Go back</a>
+        </p>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { signUp, loginWithGoogle, generateOTP, storeOTP, verifyOTP, sendOTPEmail } from "/zee-clothing/js/auth.js";
+  import { auth } from "/zee-clothing/js/firebase-config.js";
+  import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+  onAuthStateChanged(auth, user => { if (user) window.location.href = "/zee-clothing/pages/account.html"; });
+
+  function toast(msg, type="s") {
+    const w = document.getElementById("toastWrap");
+    const t = document.createElement("div");
+    t.className = `toast ${type}`;
+    t.innerHTML = `<span class="toast-icon">${type==="s"?"✓":"✕"}</span><span>${msg}</span>`;
+    w.appendChild(t);
+    setTimeout(() => t.remove(), 5000);
+  }
+
+  function setErr(id, msg) {
+    const el = document.getElementById(id);
+    el.textContent = msg; el.classList.toggle("show", !!msg);
+  }
+
+  function setLoading(btnId, on) {
+    const btn = document.getElementById(btnId);
+    btn.classList.toggle("loading", on); btn.disabled = on;
+  }
+
+  // Password toggle
+  function makeToggle(btnId, inputId) {
+    document.getElementById(btnId).addEventListener("click", () => {
+      const inp = document.getElementById(inputId);
+      const btn = document.getElementById(btnId);
+      inp.type = inp.type === "password" ? "text" : "password";
+      btn.textContent = inp.type === "password" ? "SHOW" : "HIDE";
+    });
+  }
+  makeToggle("togglePw", "password");
+  makeToggle("toggleConfirm", "confirmPw");
+
+  // Password strength
+  document.getElementById("password").addEventListener("input", e => {
+    const v = e.target.value;
+    let score = 0;
+    if (v.length >= 8) score++;
+    if (/[A-Z]/.test(v)) score++;
+    if (/[0-9]/.test(v)) score++;
+    if (/[^A-Za-z0-9]/.test(v)) score++;
+    const levels = [
+      { w:"0%", c:"transparent", l:"" },
+      { w:"25%", c:"#FF4444", l:"WEAK" },
+      { w:"50%", c:"#FF8800", l:"FAIR" },
+      { w:"75%", c:"#C8FF00", l:"GOOD" },
+      { w:"100%", c:"#00FF88", l:"STRONG" }
+    ];
+    const lv = levels[score];
+    document.getElementById("strengthFill").style.cssText = `width:${lv.w}; background:${lv.c};`;
+    const lbl = document.getElementById("strengthLabel");
+    lbl.textContent = lv.l; lbl.style.color = lv.c;
+  });
+
+  let pendingEmail = "", pendingPw = "", pendingName = "", generatedOTP = "";
+
+  // Signup submit
+  document.getElementById("signupBtn").addEventListener("click", async () => {
+    ["nameErr","emailErr","pwErr","confirmErr","termsErr"].forEach(id => setErr(id,""));
+    const name    = document.getElementById("fullName").value.trim();
+    const email   = document.getElementById("email").value.trim();
+    const pw      = document.getElementById("password").value;
+    const confirm = document.getElementById("confirmPw").value;
+    const terms   = document.getElementById("terms").checked;
+
+    let valid = true;
+    if (!name)              { setErr("nameErr","Full name is required."); valid=false; }
+    if (!email || !/\S+@\S+\.\S+/.test(email)) { setErr("emailErr","Valid email required."); valid=false; }
+    if (!pw || pw.length<8) { setErr("pwErr","Password must be at least 8 characters."); valid=false; }
+    if (pw !== confirm)     { setErr("confirmErr","Passwords do not match."); valid=false; }
+    if (!terms)             { setErr("termsErr","You must accept the terms."); valid=false; }
+    if (!valid) return;
+
+    setLoading("signupBtn", true);
+    try {
+      // Generate and store OTP
+      generatedOTP = generateOTP();
+      pendingEmail = email; pendingPw = pw; pendingName = name;
+      await storeOTP(email, generatedOTP);
+      await sendOTPEmail(email, generatedOTP, name);
+
+      // Show OTP step
+      document.getElementById("stepSignup").style.display = "none";
+      document.getElementById("stepOTP").style.display = "block";
+      document.getElementById("otpEmailDisplay").textContent = email;
+      document.querySelectorAll(".otp-digit")[0].focus();
+
+      toast(`Verification code sent to ${email}!`);
+    } catch(err) {
+      setLoading("signupBtn", false);
+      const map = {
+        "auth/email-already-in-use": "An account with this email already exists.",
+        "auth/weak-password": "Password is too weak."
+      };
+      toast(map[err.code] || err.message, "e");
+    }
+  });
+
+  // OTP digit auto-advance
+  document.querySelectorAll(".otp-digit").forEach((input, i, all) => {
+    input.addEventListener("input", () => {
+      if (input.value && i < all.length - 1) all[i+1].focus();
+    });
+    input.addEventListener("keydown", e => {
+      if (e.key === "Backspace" && !input.value && i > 0) all[i-1].focus();
+    });
+  });
+
+  // Verify OTP
+  document.getElementById("verifyBtn").addEventListener("click", async () => {
+    const otp = [...document.querySelectorAll(".otp-digit")].map(i => i.value).join("");
+    if (otp.length < 6) { setErr("otpErr","Enter all 6 digits."); return; }
+
+    setLoading("verifyBtn", true);
+    try {
+      const valid = await verifyOTP(pendingEmail, otp);
+      if (!valid) { setErr("otpErr","Invalid or expired code. Try again."); setLoading("verifyBtn", false); return; }
+      await signUp(pendingEmail, pendingPw, pendingName);
+      toast("Account created! Welcome to ZEE 🔥");
+      setTimeout(() => window.location.href = "/zee-clothing/pages/account.html", 1500);
+    } catch(err) {
+      setLoading("verifyBtn", false);
+      setErr("otpErr", err.message);
+    }
+  });
+
+  // Resend OTP
+  document.getElementById("resendOtp").addEventListener("click", async e => {
+    e.preventDefault();
+    generatedOTP = generateOTP();
+    await storeOTP(pendingEmail, generatedOTP);
+    await sendOTPEmail(pendingEmail, generatedOTP, pendingName);
+    toast("New code sent!");
+  });
+
+  // Back to signup
+  document.getElementById("backToSignup").addEventListener("click", e => {
+    e.preventDefault();
+    document.getElementById("stepOTP").style.display = "none";
+    document.getElementById("stepSignup").style.display = "block";
+    setLoading("signupBtn", false);
+  });
+
+  // Google
+  document.getElementById("googleBtn").addEventListener("click", async () => {
+    try {
+      await loginWithGoogle();
+      toast("Welcome to ZEE! 🔥");
+    } catch(err) {
+      if (err.code !== "auth/popup-closed-by-user") toast(err.message, "e");
+    }
+  });
+</script>
+</body>
+</html>
